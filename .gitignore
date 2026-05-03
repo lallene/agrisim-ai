@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.pyc
+
+# Virtual env
+venv/
+.env
+
+# OS
+.DS_Store
+
+# Docker / DB
+*.db
+
+# Logs
+*.log
+
+# Data
+data/
+backend/data/
+
+# Models
+backend/model/*.pkl
+
+# Streamlit cache
+.streamlit/
+
+# IDE
+.vscode/
+.idea/
+
+__pycache__/
+*.pyc
+.DS_Store
+backend/model/*.csv

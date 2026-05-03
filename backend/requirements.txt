@@ -1,0 +1,14 @@
+fastapi
+uvicorn
+pydantic
+requests
+pandas
+scikit-learn
+joblib
+sqlalchemy
+psycopg2-binary
+gdown
+gdown
+joblib
+numpy
+pandas
