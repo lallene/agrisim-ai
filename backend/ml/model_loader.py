@@ -15,7 +15,7 @@ MODEL_ID = os.getenv("MODEL_ID")
 METADATA_ID = os.getenv("METADATA_ID")
 
 MIN_MODEL_SIZE = 1_000_000
-MIN_METADATA_SIZE = 1_000
+MIN_METADATA_SIZE = 100
 
 
 def download_file_if_missing(file_id: str | None, output_path: str, label: str, min_size: int):
