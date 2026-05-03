@@ -6,7 +6,7 @@ from services.weather_service import (
     get_soil_data,
     get_climate_zone
 )
-from ml.model_loader import predict_yield
+from ml.model_loader import predict_yield, load_artifacts
 from api.database import init_db, SessionLocal, Prediction
 import pandas as pd
 
@@ -21,6 +21,7 @@ app = FastAPI(
 )
 
 init_db()
+load_artifacts()
 
 # ─────────────────────────────────────────────
 # UTILS
@@ -55,16 +56,29 @@ def home():
 def cities_search(data: CitySearchInput):
     return search_cities(data.query)
 
+@app.get("/health")
+def health():
+    return {
+        "status": "ok",
+        "model_loaded": True,
+        "docs": "/docs"
+    }
 
 # 🌱 cultures dynamiques
 @app.get("/cultures")
 def get_cultures():
     try:
         df = pd.read_csv("data/cultures_agricoles.csv")
-        return {"cultures": sorted(df["Culture"].dropna().unique().tolist())}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
+        cultures = sorted(df["Culture"].dropna().unique().tolist())
+        return {"cultures": cultures}
+    except Exception:
+        return {
+            "cultures": [
+                "Blé", "Maïs", "Riz (paddy)", "Soja", "Orge", "Coton",
+                "Manioc", "Mangue", "Sorgho", "Arachide", "Orange",
+                "Pomme de terre", "Banane", "Tomate"
+            ]
+        }
 
 # 🌍 recommandation
 @app.post("/cultures/recommend")

@@ -14,9 +14,13 @@ METADATA_PATH = os.path.join(MODEL_DIR, "model_metadata.pkl")
 MODEL_ID = os.getenv("MODEL_ID")
 METADATA_ID = os.getenv("METADATA_ID")
 
+MIN_MODEL_SIZE = 1_000_000
+MIN_METADATA_SIZE = 1_000
 
-def download_file_if_missing(file_id: str | None, output_path: str, label: str):
-    if os.path.exists(output_path):
+
+def download_file_if_missing(file_id: str | None, output_path: str, label: str, min_size: int):
+    if os.path.exists(output_path) and os.path.getsize(output_path) >= min_size:
+        print(f"{label} déjà présent ✅")
         return
 
     if not file_id:
@@ -32,14 +36,32 @@ def download_file_if_missing(file_id: str | None, output_path: str, label: str):
     if not os.path.exists(output_path):
         raise RuntimeError(f"Échec du téléchargement : {label}")
 
+    if os.path.getsize(output_path) < min_size:
+        raise RuntimeError(f"{label} corrompu ou incomplet.")
+
 
 @lru_cache(maxsize=1)
 def load_artifacts():
-    download_file_if_missing(MODEL_ID, MODEL_PATH, "MODEL_ID")
-    download_file_if_missing(METADATA_ID, METADATA_PATH, "METADATA_ID")
+    print("Chargement des artefacts ML...")
+
+    download_file_if_missing(
+        MODEL_ID,
+        MODEL_PATH,
+        "MODEL_ID",
+        MIN_MODEL_SIZE
+    )
+
+    download_file_if_missing(
+        METADATA_ID,
+        METADATA_PATH,
+        "METADATA_ID",
+        MIN_METADATA_SIZE
+    )
 
     model = joblib.load(MODEL_PATH)
     metadata = joblib.load(METADATA_PATH)
+
+    print("Modèle chargé avec succès ✅")
 
     return model, metadata
 
@@ -63,6 +85,14 @@ def prepare_input(data: dict):
 
     if "ndvi_source" not in df.columns:
         df["ndvi_source"] = "simulated"
+
+    missing_cols = [
+        col for col in metadata["feature_cols"]
+        if col not in df.columns
+    ]
+
+    if missing_cols:
+        raise ValueError(f"Colonnes manquantes pour le modèle : {missing_cols}")
 
     return df[metadata["feature_cols"]]
 
